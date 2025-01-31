@@ -4,6 +4,9 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
+import { useToast } from "@/components/ui/use-toast";
+import { fetchDoctors, registerDoctor } from "@/lib/program";
+import { connectWallet } from "@/lib/solana";
 
 interface Doctor {
   authority: string;
@@ -14,45 +17,61 @@ interface Doctor {
   reviewCount: number;
 }
 
-const mockDoctors: Doctor[] = [
-  {
-    authority: "abc123",
-    name: "Dr. Sarah Johnson",
-    specialization: "Cardiology",
-    isVerified: true,
-    rating: 4,
-    reviewCount: 28
-  },
-  {
-    authority: "def456",
-    name: "Dr. Michael Chen",
-    specialization: "Neurology",
-    isVerified: true,
-    rating: 5,
-    reviewCount: 42
-  },
-  {
-    authority: "ghi789",
-    name: "Dr. Emily Williams",
-    specialization: "Pediatrics",
-    isVerified: false,
-    rating: 0,
-    reviewCount: 0
-  }
-];
-
 const Doctors = () => {
-  const [isConnected] = useState(false);
+  const [isConnected, setIsConnected] = useState(false);
+  const { toast } = useToast();
 
-  const { data: doctors, isLoading } = useQuery({
+  const { data: doctors, isLoading, refetch } = useQuery({
     queryKey: ["doctors"],
-    queryFn: async () => {
-      // TODO: Implement actual Solana connection and fetch doctors
-      return new Promise<Doctor[]>((resolve) => {
-        setTimeout(() => resolve(mockDoctors), 1000);
+    queryFn: fetchDoctors,
+    enabled: isConnected,
+  });
+
+  const handleConnectWallet = async () => {
+    try {
+      const publicKey = await connectWallet();
+      setIsConnected(true);
+      toast({
+        title: "Wallet Connected",
+        description: `Connected with address: ${publicKey.slice(0, 8)}...`,
+      });
+      refetch();
+    } catch (error: any) {
+      toast({
+        title: "Connection Failed",
+        description: error.message,
+        variant: "destructive",
       });
     }
-  });
+  };
+
+  const handleRegisterDoctor = async () => {
+    if (!isConnected) {
+      toast({
+        title: "Connect Wallet",
+        description: "Please connect your wallet first",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    try {
+      const success = await registerDoctor("Dr. New Doctor", "General Medicine");
+      if (success) {
+        toast({
+          title: "Registration Successful",
+          description: "Your registration as a doctor is pending verification.",
+        });
+        refetch();
+      }
+    } catch (error: any) {
+      toast({
+        title: "Registration Failed",
+        description: error.message,
+        variant: "destructive",
+      });
+    }
+  };
 
   if (isLoading) {
     return (
@@ -80,8 +99,10 @@ const Doctors = () => {
     <div className="container mx-auto py-8 px-4">
       <div className="flex justify-between items-center mb-8">
         <h1 className="text-3xl font-bold">Find Doctors</h1>
-        {!isConnected && (
-          <Button variant="default">Connect Wallet to Register</Button>
+        {!isConnected ? (
+          <Button onClick={handleConnectWallet}>Connect Wallet</Button>
+        ) : (
+          <Button onClick={handleRegisterDoctor}>Register as Doctor</Button>
         )}
       </div>
 
