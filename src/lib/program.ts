@@ -1,5 +1,7 @@
 import { web3, Program, AnchorProvider, Idl } from "@project-serum/anchor";
 import { getProvider } from "./solana";
+import * as anchor from "@project-serum/anchor";
+const { BN } = anchor;
 
 // Replace with your deployed program ID
 const PROGRAM_ID = "6e4tFWuEq2nP4KnCmysAXcxAv4WxVdWT3XbN52XzpLvq";
