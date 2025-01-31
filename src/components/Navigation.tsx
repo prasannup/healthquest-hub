@@ -2,6 +2,7 @@ import { useState } from "react";
 import { Link } from "react-router-dom";
 import { Menu, X } from "lucide-react";
 import { Button } from "./ui/button";
+import { connectWallet } from "@/lib/solana";
 
 export const Navigation = () => {
   const [isOpen, setIsOpen] = useState(false);
