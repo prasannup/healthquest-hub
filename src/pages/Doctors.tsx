@@ -108,7 +108,7 @@ const Doctors = () => {
 
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
         {doctors?.map((doctor) => (
-          <Card key={doctor.authority} className="w-full">
+          <Card key={doctor.authority.toString()} className="w-full">
             <CardHeader>
               <div className="flex items-center justify-between">
                 <CardTitle className="text-xl">{doctor.name}</CardTitle>
