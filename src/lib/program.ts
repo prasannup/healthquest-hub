@@ -2,7 +2,7 @@ import { web3, Program, AnchorProvider } from "@project-serum/anchor";
 import { getProvider } from "./solana";
 
 // This should be replaced with your actual program ID after deployment
-const PROGRAM_ID = "Fg6PaFpoGXkYsidMpWTK6W2BeZ7FEfcYkg476zPFsLnS";
+const PROGRAM_ID = "6e4tFWuEq2nP4KnCmysAXcxAv4WxVdWT3XbN52XzpLvq";
 
 export interface DoctorAccount {
   authority: web3.PublicKey;
