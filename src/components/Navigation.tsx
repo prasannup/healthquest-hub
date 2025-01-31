@@ -21,8 +21,14 @@ export const Navigation = () => {
             <Link to="/doctors" className="text-gray-700 hover:text-primary px-3 py-2 rounded-md">
               Find Doctors
             </Link>
-            <Link to="/questions" className="text-gray-700 hover:text-primary px-3 py-2 rounded-md">
-              Ask Questions
+            <Link to="/patient-dashboard" className="text-gray-700 hover:text-primary px-3 py-2 rounded-md">
+              Patient Dashboard
+            </Link>
+            <Link to="/doctor-dashboard" className="text-gray-700 hover:text-primary px-3 py-2 rounded-md">
+              Doctor Dashboard
+            </Link>
+            <Link to="/admin-dashboard" className="text-gray-700 hover:text-primary px-3 py-2 rounded-md">
+              Admin
             </Link>
             <Button asChild variant="default">
               <Link to="/connect">Connect Wallet</Link>
@@ -53,11 +59,25 @@ export const Navigation = () => {
               Find Doctors
             </Link>
             <Link
-              to="/questions"
+              to="/patient-dashboard"
               className="block px-3 py-2 text-gray-700 hover:text-primary"
               onClick={() => setIsOpen(false)}
             >
-              Ask Questions
+              Patient Dashboard
+            </Link>
+            <Link
+              to="/doctor-dashboard"
+              className="block px-3 py-2 text-gray-700 hover:text-primary"
+              onClick={() => setIsOpen(false)}
+            >
+              Doctor Dashboard
+            </Link>
+            <Link
+              to="/admin-dashboard"
+              className="block px-3 py-2 text-gray-700 hover:text-primary"
+              onClick={() => setIsOpen(false)}
+            >
+              Admin
             </Link>
             <div className="px-3 py-2">
               <Button asChild className="w-full" variant="default">
