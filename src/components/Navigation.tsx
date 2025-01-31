@@ -30,8 +30,8 @@ export const Navigation = () => {
             <Link to="/admin-dashboard" className="text-gray-700 hover:text-primary px-3 py-2 rounded-md">
               Admin
             </Link>
-            <Button onClick={handleConnectWallet}>
-              Connect Wallet
+            <Button asChild variant="default">
+              <Link to="/connect">Connect Wallet</Link>
             </Button>
           </div>
 
