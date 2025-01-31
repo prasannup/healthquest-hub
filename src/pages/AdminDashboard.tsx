@@ -7,7 +7,7 @@ import { Loader2, CheckCircle, XCircle } from "lucide-react";
 import { connectWallet } from "@/lib/solana";
 import { fetchDoctors } from "@/lib/program";
 
-const ADMIN_WALLET = "YOUR_ADMIN_WALLET_ADDRESS"; // Replace with actual admin wallet address
+const ADMIN_WALLET = "P8RCPm3afJUGwAY3rxxGxN4DxbrnnSot6rJLr8jN5tZ"; // Replace with actual admin wallet address
 
 const AdminDashboard = () => {
   const navigate = useNavigate();
