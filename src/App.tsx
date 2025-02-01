@@ -7,6 +7,7 @@ import { Navigation } from "@/components/Navigation";
 import Index from "./pages/Index";
 import Doctors from "./pages/Doctors";
 import DoctorDashboard from "./pages/DoctorDashboard";
+import DoctorSignIn from "./pages/DoctorSignIn";
 import PatientDashboard from "./pages/PatientDashboard";
 import AdminDashboard from "./pages/AdminDashboard";
 import NotFound from "./pages/NotFound";
@@ -21,6 +22,7 @@ const App = () => (
         <Routes>
           <Route path="/" element={<Index />} />
           <Route path="/doctors" element={<Doctors />} />
+          <Route path="/doctor-signin" element={<DoctorSignIn />} />
           <Route path="/doctor-dashboard" element={<DoctorDashboard />} />
           <Route path="/patient-dashboard" element={<PatientDashboard />} />
           <Route path="/admin-dashboard" element={<AdminDashboard />} />
