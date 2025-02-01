@@ -25,7 +25,8 @@ const DoctorDashboard = () => {
   });
   const [answerText, setAnswerText] = useState("");
 
-  const { data: session } = useQuery({
+  // Query to check authentication status and session
+  const { data: session, isLoading: isSessionLoading } = useQuery({
     queryKey: ['session'],
     queryFn: async () => {
       const { data: { session } } = await supabase.auth.getSession();
@@ -33,8 +34,24 @@ const DoctorDashboard = () => {
     },
   });
 
+  // Query to check if authenticated user is a doctor
+  const { data: doctorData, isLoading: isDoctorLoading } = useQuery({
+    queryKey: ['doctor', session?.user?.id],
+    enabled: !!session?.user?.id,
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from('doctors')
+        .select('*')
+        .eq('user_id', session?.user?.id)
+        .single();
+      
+      if (error) throw error;
+      return data;
+    },
+  });
+
   useEffect(() => {
-    if (!session) {
+    if (!isSessionLoading && !session) {
       toast({
         title: "Authentication Required",
         description: "Please sign in to access the doctor dashboard",
@@ -43,10 +60,14 @@ const DoctorDashboard = () => {
       navigate("/");
       return;
     }
-    checkWalletConnection();
-    fetchDoctorInfo();
-    fetchOpenQuestions();
-  }, [session]);
+
+    if (!isSessionLoading && !isDoctorLoading && !doctorData && session) {
+      // User is authenticated but not registered as a doctor
+      setDoctorInfo(null);
+    } else if (doctorData) {
+      setDoctorInfo(doctorData);
+    }
+  }, [session, doctorData, isSessionLoading, isDoctorLoading]);
 
   const checkWalletConnection = async () => {
     try {
@@ -59,28 +80,6 @@ const DoctorDashboard = () => {
       });
       navigate("/");
     }
-  };
-
-  const fetchDoctorInfo = async () => {
-    if (!session) return;
-    
-    setIsLoading(true);
-    try {
-      const { data: doctorData, error } = await supabase
-        .from('doctors')
-        .select('*')
-        .eq('user_id', session.user.id)
-        .single();
-
-      if (error) throw error;
-      
-      if (doctorData) {
-        setDoctorInfo(doctorData);
-      }
-    } catch (error) {
-      console.error("Error fetching doctor info:", error);
-    }
-    setIsLoading(false);
   };
 
   const fetchOpenQuestions = async () => {
@@ -120,7 +119,15 @@ const DoctorDashboard = () => {
           title: "Success",
           description: "Doctor registration submitted successfully",
         });
-        await fetchDoctorInfo();
+        
+        // Refresh doctor info
+        const { data } = await supabase
+          .from('doctors')
+          .select('*')
+          .eq('user_id', session.user.id)
+          .single();
+          
+        setDoctorInfo(data);
       }
     } catch (error: any) {
       toast({
@@ -137,7 +144,7 @@ const DoctorDashboard = () => {
     console.log("Answering question:", questionId, answerText);
   };
 
-  if (isLoading) {
+  if (isSessionLoading || isDoctorLoading) {
     return (
       <div className="flex items-center justify-center min-h-screen">
         <Loader2 className="h-8 w-8 animate-spin" />
