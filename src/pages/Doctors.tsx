@@ -5,16 +5,17 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useToast } from "@/components/ui/use-toast";
-import { fetchDoctors, registerDoctor } from "@/lib/program";
+import { registerDoctor } from "@/lib/program";
 import { connectWallet } from "@/lib/solana";
+import { supabase } from "@/integrations/supabase/client";
 
 interface Doctor {
-  authority: string;
+  id: string;
   name: string;
   specialization: string;
-  isVerified: boolean;
+  is_verified: boolean;
   rating: number;
-  reviewCount: number;
+  review_count: number;
 }
 
 const Doctors = () => {
@@ -23,8 +24,14 @@ const Doctors = () => {
 
   const { data: doctors, isLoading, refetch } = useQuery({
     queryKey: ["doctors"],
-    queryFn: fetchDoctors,
-    enabled: isConnected,
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from('doctors')
+        .select('*');
+      
+      if (error) throw error;
+      return data as Doctor[];
+    },
   });
 
   const handleConnectWallet = async () => {
@@ -108,11 +115,11 @@ const Doctors = () => {
 
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
         {doctors?.map((doctor) => (
-          <Card key={doctor.authority.toString()} className="w-full">
+          <Card key={doctor.id} className="w-full">
             <CardHeader>
               <div className="flex items-center justify-between">
                 <CardTitle className="text-xl">{doctor.name}</CardTitle>
-                {doctor.isVerified && (
+                {doctor.is_verified && (
                   <Badge variant="default" className="bg-green-500">Verified</Badge>
                 )}
               </div>
@@ -123,7 +130,7 @@ const Doctors = () => {
                 <div className="flex items-center space-x-2">
                   <span className="text-yellow-500">★</span>
                   <span>{doctor.rating.toFixed(1)}</span>
-                  <span className="text-gray-500">({doctor.reviewCount} reviews)</span>
+                  <span className="text-gray-500">({doctor.review_count} reviews)</span>
                 </div>
                 <Button variant="outline">View Profile</Button>
               </div>

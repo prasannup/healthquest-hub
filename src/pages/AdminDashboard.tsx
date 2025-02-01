@@ -5,16 +5,39 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Loader2, CheckCircle, XCircle } from "lucide-react";
 import { connectWallet } from "@/lib/solana";
-import { fetchDoctors } from "@/lib/program";
+import { supabase } from "@/integrations/supabase/client";
+import { useQuery } from "@tanstack/react-query";
 
 const ADMIN_WALLET = "P8RCPm3afJUGwAY3rxxGxN4DxbrnnSot6rJLr8jN5tZ"; // Replace with actual admin wallet address
+
+interface Doctor {
+  id: string;
+  name: string;
+  specialization: string;
+  is_verified: boolean;
+  rating: number;
+  review_count: number;
+  user_id: string;
+}
 
 const AdminDashboard = () => {
   const navigate = useNavigate();
   const { toast } = useToast();
   const [isLoading, setIsLoading] = useState(false);
-  const [doctors, setDoctors] = useState<any[]>([]);
   const [isAdmin, setIsAdmin] = useState(false);
+
+  const { data: doctors, refetch } = useQuery({
+    queryKey: ["admin-doctors"],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from('doctors')
+        .select('*');
+      
+      if (error) throw error;
+      return data as Doctor[];
+    },
+    enabled: isAdmin,
+  });
 
   useEffect(() => {
     checkAdminAccess();
@@ -33,7 +56,6 @@ const AdminDashboard = () => {
         return;
       }
       setIsAdmin(true);
-      fetchDoctorsList();
     } catch (error) {
       toast({
         title: "Error",
@@ -44,30 +66,20 @@ const AdminDashboard = () => {
     }
   };
 
-  const fetchDoctorsList = async () => {
-    setIsLoading(true);
+  const handleVerifyDoctor = async (doctorId: string) => {
     try {
-      const doctorsList = await fetchDoctors();
-      setDoctors(doctorsList);
-    } catch (error) {
-      console.error("Error fetching doctors:", error);
-      toast({
-        title: "Error",
-        description: "Failed to fetch doctors list",
-        variant: "destructive",
-      });
-    }
-    setIsLoading(false);
-  };
+      const { error } = await supabase
+        .from('doctors')
+        .update({ is_verified: true })
+        .eq('id', doctorId);
 
-  const handleVerifyDoctor = async (doctorAddress: string) => {
-    try {
-      // TODO: Implement doctor verification through Solana
+      if (error) throw error;
+
       toast({
         title: "Success",
         description: "Doctor verified successfully",
       });
-      await fetchDoctorsList();
+      refetch();
     } catch (error: any) {
       toast({
         title: "Error",
@@ -92,12 +104,12 @@ const AdminDashboard = () => {
           <CardTitle>Manage Doctors</CardTitle>
         </CardHeader>
         <CardContent>
-          {doctors.length === 0 ? (
+          {!doctors || doctors.length === 0 ? (
             <p className="text-muted-foreground">No registered doctors</p>
           ) : (
             <div className="space-y-4">
               {doctors.map((doctor) => (
-                <Card key={doctor.authority.toString()}>
+                <Card key={doctor.id}>
                   <CardContent className="p-4">
                     <div className="flex items-start justify-between">
                       <div>
@@ -106,14 +118,14 @@ const AdminDashboard = () => {
                           Specialization: {doctor.specialization}
                         </p>
                         <p className="text-sm text-muted-foreground">
-                          Wallet: {doctor.authority.toString()}
+                          User ID: {doctor.user_id}
                         </p>
                         <p className="text-sm text-muted-foreground">
-                          Rating: {doctor.rating}/5 ({doctor.reviewCount} reviews)
+                          Rating: {doctor.rating}/5 ({doctor.review_count} reviews)
                         </p>
                         <div className="flex items-center mt-2">
                           <span className="text-sm mr-2">Status:</span>
-                          {doctor.isVerified ? (
+                          {doctor.is_verified ? (
                             <span className="flex items-center text-green-600">
                               <CheckCircle className="h-4 w-4 mr-1" />
                               Verified
@@ -126,9 +138,9 @@ const AdminDashboard = () => {
                           )}
                         </div>
                       </div>
-                      {!doctor.isVerified && (
+                      {!doctor.is_verified && (
                         <Button
-                          onClick={() => handleVerifyDoctor(doctor.authority.toString())}
+                          onClick={() => handleVerifyDoctor(doctor.id)}
                         >
                           Verify Doctor
                         </Button>

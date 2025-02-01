@@ -9,6 +9,8 @@ import { Textarea } from "@/components/ui/textarea";
 import { Loader2 } from "lucide-react";
 import { connectWallet } from "@/lib/solana";
 import { registerDoctor, fetchDoctors } from "@/lib/program";
+import { supabase } from "@/integrations/supabase/client";
+import { useQuery } from "@tanstack/react-query";
 
 const DoctorDashboard = () => {
   const navigate = useNavigate();
@@ -23,11 +25,28 @@ const DoctorDashboard = () => {
   });
   const [answerText, setAnswerText] = useState("");
 
+  const { data: session } = useQuery({
+    queryKey: ['session'],
+    queryFn: async () => {
+      const { data: { session } } = await supabase.auth.getSession();
+      return session;
+    },
+  });
+
   useEffect(() => {
+    if (!session) {
+      toast({
+        title: "Authentication Required",
+        description: "Please sign in to access the doctor dashboard",
+        variant: "destructive",
+      });
+      navigate("/");
+      return;
+    }
     checkWalletConnection();
     fetchDoctorInfo();
     fetchOpenQuestions();
-  }, []);
+  }, [session]);
 
   const checkWalletConnection = async () => {
     try {
@@ -43,13 +62,20 @@ const DoctorDashboard = () => {
   };
 
   const fetchDoctorInfo = async () => {
+    if (!session) return;
+    
     setIsLoading(true);
     try {
-      const doctors = await fetchDoctors();
-      const walletAddress = await connectWallet();
-      const doctor = doctors.find((d: any) => d.authority.toString() === walletAddress);
-      if (doctor) {
-        setDoctorInfo(doctor);
+      const { data: doctorData, error } = await supabase
+        .from('doctors')
+        .select('*')
+        .eq('user_id', session.user.id)
+        .single();
+
+      if (error) throw error;
+      
+      if (doctorData) {
+        setDoctorInfo(doctorData);
       }
     } catch (error) {
       console.error("Error fetching doctor info:", error);
@@ -64,10 +90,32 @@ const DoctorDashboard = () => {
 
   const handleRegister = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (!session) {
+      toast({
+        title: "Error",
+        description: "Please sign in first",
+        variant: "destructive",
+      });
+      return;
+    }
+
     setIsRegistering(true);
     try {
+      // Register on Solana
       const success = await registerDoctor(formData.name, formData.specialization);
+      
       if (success) {
+        // Save to Supabase
+        const { error } = await supabase
+          .from('doctors')
+          .insert({
+            user_id: session.user.id,
+            name: formData.name,
+            specialization: formData.specialization,
+          });
+
+        if (error) throw error;
+
         toast({
           title: "Success",
           description: "Doctor registration submitted successfully",
