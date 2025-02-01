@@ -166,7 +166,7 @@ export const askQuestion = async (
     const questionAccount = web3.Keypair.generate();
     
     await program.methods
-      .askQuestion(title, content, new web3.BN(bounty))
+      .askQuestion(title, content, new BN(bounty))
       .accounts({
         question: questionAccount.publicKey,
         authority: program.provider.publicKey,
