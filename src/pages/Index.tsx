@@ -20,7 +20,7 @@ const Index = () => {
                 <Link to="/doctors">Find a Doctor</Link>
               </Button>
               <Button asChild size="lg" variant="outline">
-                <Link to="/questions">Ask a Question</Link>
+                <Link to="/doctor-dashboard">Register as Doctor</Link>
               </Button>
             </div>
           </div>
@@ -65,11 +65,14 @@ const Index = () => {
           <p className="text-primary-foreground/90 mb-8 max-w-2xl mx-auto">
             Whether you're a healthcare professional or seeking medical advice, we're here to help
           </p>
-          <Button asChild size="lg" variant="secondary">
-            <Link to="/register" className="inline-flex items-center">
-              Get Started <ArrowRight className="ml-2 h-4 w-4" />
-            </Link>
-          </Button>
+          <div className="flex flex-wrap justify-center gap-4">
+            <Button asChild size="lg" variant="secondary">
+              <Link to="/doctor-signin">Doctor Sign In</Link>
+            </Button>
+            <Button asChild size="lg" variant="outline" className="bg-white/10 hover:bg-white/20">
+              <Link to="/doctor-dashboard">Register as Doctor</Link>
+            </Button>
+          </div>
         </div>
       </section>
     </div>

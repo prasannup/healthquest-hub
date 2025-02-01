@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, Link } from "react-router-dom";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
@@ -152,9 +152,9 @@ const DoctorSignIn = () => {
             <Button
               variant="link"
               className="p-0 h-auto"
-              onClick={() => navigate("/doctor-dashboard")}
+              asChild
             >
-              Register here
+              <Link to="/doctor-dashboard">Register here</Link>
             </Button>
           </p>
         </div>
